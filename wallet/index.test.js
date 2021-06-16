@@ -51,14 +51,13 @@ describe('Wallet', () => {
             });
         });
         describe('and the amound is valid', () => {
-
             let transaction, amount, recipient;
 
             beforeEach(() => {
                 amount = 50;
                 recipient = 'aman-recipient';
                 transaction = wallet.createTransaction({ amount, recipient });
-            })
+            });
 
             it('creates an instance of `Transaction`', () => {
                 expect(transaction instanceof Transaction).toBe(true);

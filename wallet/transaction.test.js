@@ -41,10 +41,10 @@ describe('transaction', () => {
         it('has an `input`', () => {
             expect(transaction).toHaveProperty('input');
         });
+
         it('has a `timestamp`', () => {
             expect(transaction.input).toHaveProperty('timestamp');
         });
-
 
         it('sets the `amount` to the `senderWallet` balance', () => {
             expect(transaction.input.amount).toEqual(senderWallet.balance);
@@ -73,8 +73,6 @@ describe('transaction', () => {
             global.console.error = errorMock;
         });
 
-
-
         describe('when the taransaction is valid', () => {
             it('returns true', () => {
                 expect(Transaction.validTransaction(transaction)).toBe(true);
@@ -84,7 +82,6 @@ describe('transaction', () => {
         describe('when the taransaction is invalid', () => {
 
             describe('and the transaction outputMap value is invalid', () => {
-
                 it('returns false and logs an error', () => {
                     transaction.outputMap[senderWallet.publicKey] = 999999;
 
@@ -98,7 +95,6 @@ describe('transaction', () => {
 
 
             describe('and the transaction input signature is invalid', () => {
-
                 it('returns false and logs an error', () => {
                     transaction.input.signature = new Wallet().sign('data');
 
@@ -108,7 +104,72 @@ describe('transaction', () => {
                 });
 
             });
+        });
+    });
 
+
+    describe('update()', () => {
+        let originalSignature, originalSenderOutput, nextRecipient, nextAmount;
+
+        describe('and the amount is invalid', () => {
+            it('throws an error', () => {
+                expect(() => {
+                    transaction.update({
+                        senderWallet, recipient, amount: 999999
+                    })
+                }).toThrow('Amount exceeds balance');
+            });
+        });
+
+
+        describe('and the amount is valid', () => {
+            beforeEach(() => {
+                originalSignature = transaction.input.signature;
+                originalSenderOutput = transaction.outputMap[senderWallet.publicKey];
+                nextRecipient = 'next-recipient';
+                nextAmount = 55;
+                transaction.update({ senderWallet, recipient: nextRecipient, amount: nextAmount });
+            });
+
+            it('outputs the amount to the next recipient', () => {
+                expect(transaction.outputMap[nextRecipient]).toEqual(nextAmount);
+            });
+
+            it('subtracts the amount from the original sender output amount', () => {
+                expect(transaction.outputMap[senderWallet.publicKey]).toEqual(originalSenderOutput - nextAmount);
+            });
+
+            it('maintains the total output value that matches the input amount', () => {
+                expect(
+                    Object.values(transaction.outputMap)
+                        .reduce((total, outputAmount) => total + outputAmount)
+                ).toEqual(transaction.input.amount);
+            });
+
+            it('re-signs the transaction', () => {
+                expect(transaction.input.signature).not.toEqual(originalSignature);
+            });
+
+            describe('and another update for the same recipient', () => {
+                let addedAmount;
+
+                beforeEach(() => {
+                    addedAmount = 80;
+                    transaction.update({
+                        senderWallet, recipient: nextRecipient, amount: addedAmount
+                    });
+                });
+
+                it('adds to the recipient amount', () => {
+                    expect(transaction.outputMap[nextRecipient])
+                        .toEqual(nextAmount + addedAmount);
+                });
+
+                it('subtracts the amount from the original sender output amount', () => {
+                    expect(transaction.outputMap[senderWallet.publicKey])
+                        .toEqual(originalSenderOutput - nextAmount - addedAmount);
+                });
+            });
 
         });
     });
