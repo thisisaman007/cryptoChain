@@ -120,3 +120,26 @@ Improved the hash function to recognize objects with new properties as changes i
 --JS will always treat the same object in sync as equal, even if its properties have changed. two references of the same object in JS is always treated as same, even if the properties of one instance is changed.
 
 Covered edges cases with transaction updates to prevent vulnerabilities.
+
+...............................................................................
+
+Created the core transaction pool with an ability to set transactions.
+
+- Transaction pool is a data structure which is going to collect the transacitions that are created by wallets throughout the network. It has three main behaviour -
+  1.Collects a unique set of transactions objects.
+  2.it can update an existing stored transactions when a change has been submitted by a wallet.
+  3.It can reqwrite multiple transactions. whether that means replacing the collection with an entirely new set, or clearing the pool itself.
+
+implementing new object called transaction pool. - every node in the network is gonna have their own instance/ running version of the pool, key is to maintain these transaction pools remains in sync. When one node creates a new transaction, or updates an existing one for that matter, that transaction is going to have to be broadcast into the entire network based on the transaction ID. It will either be added in each transaction pool if its new, or it is going to be updated if a transaction with that id already exists. Ultimately the transaction pool is a great and useful object, because its going to enable miners to get an accurate list of recent transactions in order to include them wiithin a new block. Miners are going to use these transactions in the transaction pool as the data for the new block.
+
+Handled transaction through the API, and added API-generated transactions to the pool.
+
+Made sure invalid transactions did not go to the pool.
+
+Handled updates to transactions through the API.
+
+Exposed a new API method to read the transaction pool data.
+
+Broadcasted transactions as they occurred through the API.
+
+Synced the transaction pool map as a network-dependent object like the blockchain.
