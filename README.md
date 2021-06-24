@@ -143,3 +143,50 @@ Exposed a new API method to read the transaction pool data.
 Broadcasted transactions as they occurred through the API.
 
 Synced the transaction pool map as a network-dependent object like the blockchain.
+
+........................................................................
+Created the core transaction miner class to capture how miners should add transactions to the blockchain.
+
+- transaction miner - do a job of mining new blocks, using transactoions as the data from the mining pool. miners are the individuals who pay the cost of conputational power and do the work for finding a valid hash for new block. Obviously not for free, but for the reward, on successful mining a block, the winer will recieve an official MINING_REWARD. This reward comes in a form of special transaction, the transaction only has a single output, which will be for the minners wallet.
+  this mining reward helps and motivates miners to keep on mining the blocks.
+
+1. Grab all the valid transactions in the pool.
+2. Generate a miner's reward.
+3. Do the CPU work to find a valid hash.
+4. Broadcast the updated blockchain.
+5. Clear the transaction pool.(pool of their own node, others will have to update their pool after validation)
+
+Added the ability to grab valid transactions from the transaction pool.
+
+Added a way to clear blockchain transactions to ensure that only unique transaction objects could be recorded.
+
+Added a mining transactions endpoint to enable transaction mining through the API.
+
+Cleared recorded transactions on a successful replacement of the blockchain.
+
+Calculated the wallet balance based on the blockchain history.
+
+- staring balance for each node is defined and fixed. (say 1000 coins)
+- scan the entire blockchain and transaction history, starting from the most recent one, going down to the genesis block.
+- if the wallet has not made any transaction in blockchain history, its balace is default stating value.
+- however, if trancation exists, the balance is the amount remaining.
+- say the walllet performs a new transaction, their balance should be the amount of the newest most recent transaction, even though they have other outputs in the overall output history.
+
+Applied these wallet balances whenever conducting a new transaction.
+
+Exposed the wallet information including the public key and balance through the API.
+
+-Validated transaction data incoming into the blockchain.
+this is important for security of blockchain data, isValidChain() func checks few aspects of the chain validity like it checks id the genesis block is correct, the lastHash reference is correct, the Block difficulty matches the hash leading 0's and it also checks the generated hash matches the hash. BUT it does not add any checks to the DATA, the transaction data is not secure.
+so we define validtransactionData() with following rules-
+
+- each transaction must be correctly formatted.
+- Only one mining reward per block.
+- Valid input amounts according balance in blockchain history.
+- blockchain must not have identical transactions.
+
+Validated incoming transaction input balances.
+
+Prevented duplicate transactions from appearing in a block’s data.
+
+Validated the entire transaction itself when accepting new user-contributed blockchains.
